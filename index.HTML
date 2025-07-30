@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Turnos - Parqueaderos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #177328 0%, #026109 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .control-group select,
+        .control-group input,
+        .control-group button {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .control-group button {
+            background: linear-gradient(135deg, #11500a 0%, #09631b 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+
+        .control-group button:hover {
+            transform: translateY(-2px);
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+
+        .turno-manana { background: linear-gradient(135deg, #d2df17 0%, #eeee34 100%); }
+        .turno-tarde { background: linear-gradient(135deg, #d88512 0%, #e08a0a 100%); }
+        .turno-noche { background: linear-gradient(135deg, #667eea 0%, #0a1947 100%); }
+        .descanso-item { background: linear-gradient(135deg, #a80512 0%, #46051a 100%); }
+
+        .rules-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .month-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            border: 2px solid #f0f0f0;
+        }
+
+        .month-title {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .schedule-table th {
+            background: linear-gradient(135deg, #12690f 0%, #000000 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .schedule-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            font-weight: 500;
+            font-size: 0.8rem;
+            vertical-align: middle;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .schedule-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .schedule-table tr:hover {
+            background-color: #e3f2fd;
+        }
+
+        /* Colores para días de la semana */
+        .lunes { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: white; }
+        .martes { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        .miercoles { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; }
+        .jueves { background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%); color: #333; }
+        .viernes { background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%); color: white; }
+        .sabado { background: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%); color: white; }
+        .domingo { background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%); color: #333; }
+
+        /* Estilos para turnos */
+        .turno-m { background: #e8f5e8; color: #2e7d32; font-weight: bold; }
+        .turno-t { background: #fff3e0; color: #f57c00; font-weight: bold; }
+        .turno-n { background: #e3f2fd; color: #1976d2; font-weight: bold; }
+        .descanso { background: #fce4ec; color: #c2185b; font-weight: bold; }
+
+        .summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 1.6rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .totals-table th {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .totals-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .balanced-hours { 
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); 
+            color: white; 
+            font-weight: bold; 
+        }
+
+        .employee-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #090609 0%, #59ff176d 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .employee-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .employee-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .employee-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 1200px) {
+            .schedule-table {
+                font-size: 0.7rem;
+            }
+            
+            .schedule-table th,
+            .schedule-table td {
+                padding: 6px 4px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .schedule-table {
+                font-size: 0.65rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> Turnos - Parqueaderos</h1>
+            <p>Gestión inteligente de horarios para personal de parqueaderos</p>
+        </div>
+
+        <div class="content">
+            <!-- Controles principales -->
+            <div class="controls">
+                <div class="control-group">
+                    <label for="month-select">Mes:</label>
+                    <select id="month-select">
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="year-select">Año:</label>
+                    <select id="year-select">
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <button onclick="generateSchedule()">Generar Horario</button>
+                    <button onclick="autoAssignShifts()">Asignar Automático</button>
+                </div>
+            </div>
+
+            <!-- Gestión de empleados -->
+            <div class="employee-section">
+                <h3>👥 Gestión de Empleados</h3>
+                <div class="employee-controls">
+                    <input type="text" id="employee-name" placeholder="Nombre del empleado">
+                    <button onclick="addEmployee()">Agregar Empleado</button>
+                </div>
+                <div class="employee-list" id="employee-list"></div>
+            </div>
+
+            <!-- Leyenda de turnos -->
+            <div class="legend">
+                <div class="legend-item turno-manana">
+                    <strong>Turno Mañana (M)</strong><br>
+                    L-S: 6:00 AM - 1:00 PM (7h)<br>
+                    Dom: 8:00 AM - 2:00 PM (6h)
+                </div>
+                <div class="legend-item turno-tarde">
+                    <strong>Turno Tarde (T)</strong><br>
+                    L-S: 1:00 PM - 8:00 PM (7h)<br>
+                    Dom: 2:00 PM - 9:00 PM (7h)
+                </div>
+                <div class="legend-item turno-noche">
+                    <strong>Turno Noche (N)</strong><br>
+                    L-Mi: 5:00 PM - 11:00 PM (6h)<br>
+                    J-S: 8:00 PM - 2:00 AM (6h)<br>
+                    <em>Domingo: Sin turno noche</em>
+                </div>
+                <div class="legend-item descanso-item">
+                    <strong>Descanso (D)</strong><br>
+                    Día libre
+                </div>
+            </div>
+
+            <!-- Reglas del sistema -->
+            <div class="rules-box">
+                <h3> Reglas del Sistema (7 Operarios - 44h Semanales)</h3>
+                <p>• <strong>2 operarios por turno</strong> (M/T/N) • <strong>1 operario descansa cada día</strong> • 
+                <strong>44 horas semanales exactas</strong> por trabajador
+                </p>
+            </div>
+
+            <!-- Tabla de horarios -->
+            <div class="month-section">
+                <div class="month-title" id="month-display">
+                    Seleccione un mes para generar el horario
+                </div>
+                <div id="schedule-container"></div>
+            </div>
+
+            <!-- Resumen mensual -->
+            <div class="summary-section" id="summary-section" style="display: none;">
+                <div class="summary-title">📊 Resumen Mensual</div>
+                <table class="totals-table" id="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Turno Mañana</th>
+                            <th>Turno Tarde</th>
+                            <th>Turno Noche</th>
+                            <th>Días Descanso</th>
+                            <th>Total Horas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summary-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let employees = ['XAVIER', 'RUBIELA', 'WILSON', 'CRISTIAN', 'SEBASTIAN', 'ALVARO', 'MIGUEL'];
+        let currentSchedule = {};
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('month-select').value = currentMonth;
+            document.getElementById('year-select').value = currentYear;
+            updateEmployeeList();
+        });
+
+        // Gestión de empleados
+        function addEmployee() {
+            const nameInput = document.getElementById('employee-name');
+            const name = nameInput.value.trim();
+            
+            if (name && !employees.includes(name)) {
+                employees.push(name);
+                nameInput.value = '';
+                updateEmployeeList();
+            }
+        }
+
+        function removeEmployee(index) {
+            employees.splice(index, 1);
+            updateEmployeeList();
+        }
+
+        function updateEmployeeList() {
+            const container = document.getElementById('employee-list');
+            container.innerHTML = employees.map((emp, index) => 
+                `<div class="employee-item">
+                    <span>${emp}</span>
+                    <button class="delete-btn" onclick="removeEmployee(${index})">Eliminar</button>
+                </div>`
+            ).join('');
+        }
+
+        // Generar calendario
+        function generateSchedule() {
+            const month = parseInt(document.getElementById('month-select').value);
+            const year = parseInt(document.getElementById('year-select').value);
+            
+            currentMonth = month;
+            currentYear = year;
+            
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            document.getElementById('month-display').textContent = `${monthNames[month]} ${year}`;
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            let table = `
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>`;
+            
+            // Generar encabezados de días
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayName = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'][date.getDay()];
+                const dayClass = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'][date.getDay()];
+                table += `<th class="${dayClass}">${day}<br>${dayName}</th>`;
+            }
+            
+            table += `</tr></thead><tbody>`;
+            
+            // Generar filas de empleados
+            employees.forEach((employee, empIndex) => {
+                table += `<tr><td style="font-weight: bold; background: #f0f0f0;">${employee}</td>`;
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const cellId = `cell-${empIndex}-${day}`;
+                    const shift = currentSchedule[`${empIndex}-${day}`] || '';
+                    const shiftClass = getShiftClass(shift);
+                    
+                    table += `<td class="${shiftClass}" id="${cellId}" onclick="cycleShift(${empIndex}, ${day})">${shift}</td>`;
+                }
+                
+                table += `</tr>`;
+            });
+            
+            table += `</tbody></table>`;
+            
+            document.getElementById('schedule-container').innerHTML = table;
+            updateSummary();
+        }
+
+        // Alternar turnos al hacer clic
+        function cycleShift(empIndex, day) {
+            const key = `${empIndex}-${day}`;
+            const shifts = ['', 'M', 'T', 'N', 'D'];
+            const current = currentSchedule[key] || '';
+            const currentIndex = shifts.indexOf(current);
+            const nextIndex = (currentIndex + 1) % shifts.length;
+            
+            currentSchedule[key] = shifts[nextIndex];
+            
+            const cell = document.getElementById(`cell-${empIndex}-${day}`);
+            cell.textContent = shifts[nextIndex];
+            cell.className = getShiftClass(shifts[nextIndex]);
+            
+            updateSummary();
+        }
+
+        function getShiftClass(shift) {
+            switch(shift) {
+                case 'M': return 'turno-m';
+                case 'T': return 'turno-t';
+                case 'N': return 'turno-n';
+                case 'D': return 'descanso';
+                default: return '';
+            }
+        }
+
+        // Función para calcular horas de trabajo según el día y turno
+        function getShiftHours(dayOfWeek, shift) {
+            // dayOfWeek: 0=Domingo, 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado
+            
+            if (shift === 'D') return 0; // Descanso
+            
+            switch (shift) {
+                case 'M': // Mañana
+                    return dayOfWeek === 0 ? 6 : 7; // Domingo 6h, otros días 7h
+                    
+                case 'T': // Tarde
+                    return 7; // Todos los días 7h
+                    
+                case 'N': // Noche
+                    if (dayOfWeek === 0) return 0; // Domingo no hay turno noche
+                    return 6; // Lunes a sábado 6h
+                    
+                default:
+                    return 0;
+            }
+        }
+        
+        // Asignación automática de turnos con horarios específicos y 44h semanales
+        function autoAssignShifts() {
+            if (employees.length === 0) {
+                alert('Agregue empleados antes de generar turnos automáticos');
+                return;
+            }
+            
+            if (employees.length !== 7) {
+                alert('Este sistema está diseñado para exactamente 7 operarios. Actual: ' + employees.length);
+                return;
+            }
+            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            currentSchedule = {};
+            
+            // Generar horario por semanas completas
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayOfWeek = new Date(currentYear, currentMonth, day).getDay(); // 0=Domingo
+                const weekNumber = Math.floor((day - 1) / 7);
+                
+                // Determinar quién descansa (rotación semanal)
+                const restingEmployeeIndex = (dayOfWeek + weekNumber) % 7;
+                currentSchedule[`${restingEmployeeIndex}-${day}`] = 'D';
+                
+                // Obtener empleados activos
+                const activeEmployees = [];
+                for (let i = 0; i < 7; i++) {
+                    if (i !== restingEmployeeIndex) {
+                        activeEmployees.push(i);
+                    }
+                }
+                
+                // Asignación de turnos para domingo (solo M y T, no hay N)
+                if (dayOfWeek === 0) { // Domingo
+                    // 2 en mañana, 2 en tarde, 2 descansan adicionales
+                    const morningWorkers = activeEmployees.slice(0, 2);
+                    const afternoonWorkers = activeEmployees.slice(2, 4);
+                    const extraRest = activeEmployees.slice(4, 6);
+                    
+                    morningWorkers.forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'M';
+                    });
+                    
+                    afternoonWorkers.forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'T';
+                    });
+                    
+                    extraRest.forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'D';
+                    });
+                    
+                } else { // Lunes a Sábado
+                    // Distribuir 6 activos en 3 turnos (2 por turno)
+                    const shiftRotation = (day + weekNumber) % 3;
+                    
+                    // Rotar asignaciones para evitar que siempre los mismos tengan el mismo turno
+                    const rotatedActive = [...activeEmployees];
+                    for (let i = 0; i < shiftRotation; i++) {
+                        rotatedActive.push(rotatedActive.shift());
+                    }
+                    
+                    // Asignar 2 por turno
+                    rotatedActive.slice(0, 2).forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'M';
+                    });
+                    
+                    rotatedActive.slice(2, 4).forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'T';
+                    });
+                    
+                    rotatedActive.slice(4, 6).forEach(empIndex => {
+                        currentSchedule[`${empIndex}-${day}`] = 'N';
+                    });
+                }
+            }
+            
+            // Optimizar para cumplir exactamente 44 horas semanales
+            optimizeWeeklyHours();
+            
+            generateSchedule();
+        }
+        
+        // Optimizar horas semanales para que cada empleado tenga exactamente 44 horas
+        function optimizeWeeklyHours() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const weeksInMonth = Math.ceil(daysInMonth / 7);
+            
+            for (let week = 0; week < weeksInMonth; week++) {
+                const weekStart = week * 7 + 1;
+                const weekEnd = Math.min(weekStart + 6, daysInMonth);
+                
+                // Calcular horas actuales por empleado en esta semana
+                const weeklyHours = {};
+                employees.forEach((_, empIndex) => {
+                    weeklyHours[empIndex] = 0;
+                    
+                    for (let day = weekStart; day <= weekEnd; day++) {
+                        const shift = currentSchedule[`${empIndex}-${day}`];
+                        if (shift) {
+                            const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+                            weeklyHours[empIndex] += getShiftHours(dayOfWeek, shift);
+                        }
+                    }
+                });
+                
+                // Ajustar turnos para alcanzar 44 horas exactas
+                employees.forEach((_, empIndex) => {
+                    const currentHours = weeklyHours[empIndex];
+                    const targetHours = 44;
+                    const hoursDiff = targetHours - currentHours;
+                    
+                    if (hoursDiff !== 0) {
+                        // Buscar días en la semana donde se pueda ajustar
+                        for (let day = weekStart; day <= weekEnd && hoursDiff !== 0; day++) {
+                            const key = `${empIndex}-${day}`;
+                            const currentShift = currentSchedule[key];
+                            const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+                            
+                            // Lógica de ajuste según la diferencia de horas
+                            if (hoursDiff > 0 && currentShift === 'D') {
+                                // Necesita más horas y está descansando
+                                // Buscar intercambio con alguien que tenga exceso
+                                for (let otherEmp = 0; otherEmp < 7; otherEmp++) {
+                                    if (otherEmp !== empIndex && weeklyHours[otherEmp] > 44) {
+                                        const otherKey = `${otherEmp}-${day}`;
+                                        const otherShift = currentSchedule[otherKey];
+                                        
+                                        // Intercambiar si es beneficioso
+                                        const otherHours = getShiftHours(dayOfWeek, otherShift);
+                                        if (otherHours > 0 && otherHours <= hoursDiff) {
+                                            currentSchedule[key] = otherShift;
+                                            currentSchedule[otherKey] = 'D';
+                                            weeklyHours[empIndex] += otherHours;
+                                            weeklyHours[otherEmp] -= otherHours;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Actualizar resumen con cálculo de horas semanales exactas
+        function updateSummary() {
+            if (employees.length === 0) return;
+            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const summaryBody = document.getElementById('summary-body');
+            let summaryHTML = '';
+            
+            employees.forEach((employee, empIndex) => {
+                let morningShifts = 0, afternoonShifts = 0, nightShifts = 0, restDays = 0;
+                let totalHours = 0;
+                let weeklyHoursBreakdown = [];
+                
+                // Calcular por semanas
+                const weeksInMonth = Math.ceil(daysInMonth / 7);
+                for (let week = 0; week < weeksInMonth; week++) {
+                    const weekStart = week * 7 + 1;
+                    const weekEnd = Math.min(weekStart + 6, daysInMonth);
+                    let weeklyHours = 0;
+                    
+                    for (let day = weekStart; day <= weekEnd; day++) {
+                        const shift = currentSchedule[`${empIndex}-${day}`] || '';
+                        const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+                        const hours = getShiftHours(dayOfWeek, shift);
+                        
+                        weeklyHours += hours;
+                        totalHours += hours;
+                        
+                        switch(shift) {
+                            case 'M': morningShifts++; break;
+                            case 'T': afternoonShifts++; break;
+                            case 'N': nightShifts++; break;
+                            case 'D': restDays++; break;
+                        }
+                    }
+                    
+                    if (weekEnd >= weekStart) {
+                        weeklyHoursBreakdown.push(weeklyHours);
+                    }
+                }
+                
+                // Verificar si cumple 44 horas semanales
+                const meets44Hours = weeklyHoursBreakdown.every(hours => hours === 44);
+                const avgWeeklyHours = totalHours / weeklyHoursBreakdown.length;
+                const statusClass = meets44Hours ? 'balanced-hours' : '';
+                
+                summaryHTML += `
+                    <tr>
+                        <td><strong>${employee}</strong></td>
+                        <td>${morningShifts}</td>
+                        <td>${afternoonShifts}</td>
+                        <td>${nightShifts}</td>
+                        <td>${restDays}</td>
+                        <td class="${statusClass}">${totalHours}h (${avgWeeklyHours.toFixed(1)}h/sem)</td>
+                        <td class="${statusClass}">${meets44Hours ? '✅ 44h exactas' : `⚠️ ${avgWeeklyHours.toFixed(1)}h/sem`}</td>
+                    </tr>
+                `;
+            });
+            
+            // Agregar fila de verificación de cobertura diaria
+            let validDays = 0;
+            let sundayDetails = '';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayShifts = getDayShiftCount(day);
+                const dayOfWeek = new Date(currentYear, currentMonth, day).getDay();
+                
+                if (dayOfWeek === 0) { // Domingo
+                    if (dayShifts.M === 2 && dayShifts.T === 2 && dayShifts.N === 0 && dayShifts.D === 3) {
+                        validDays++;
+                    }
+                    sundayDetails = `Dom: ${dayShifts.M}M/${dayShifts.T}T/${dayShifts.N}N/${dayShifts.D}D`;
+                } else { // Lunes a Sábado
+                    if (dayShifts.M === 2 && dayShifts.T === 2 && dayShifts.N === 2 && dayShifts.D === 1) {
+                        validDays++;
+                    }
+                }
+            }
+            
+            const isValidSchedule = validDays === daysInMonth;
+            
+            summaryHTML += `
+                <tr style="background: #e3f2fd; font-weight: bold;">
+                    <td><strong>VALIDACIÓN</strong></td>
+                    <td colspan="4">${sundayDetails}</td>
+                    <td>Días válidos: ${validDays}/${daysInMonth}</td>
+                    <td>${isValidSchedule ? '✅ Perfecto' : '⚠️ Revisar'}</td>
+                </tr>
+            `;
+            
+            summaryBody.innerHTML = summaryHTML;
+            document.getElementById('summary-section').style.display = 'block';
+        }
+        
+        // Función auxiliar para contar turnos por día
+        function getDayShiftCount(day) {
+            const counts = { M: 0, T: 0, N: 0, D: 0 };
+            
+            for (let empIndex = 0; empIndex < employees.length; empIndex++) {
+                const key = `${empIndex}-${day}`;
+                const shift = currentSchedule[key];
+                if (shift && counts.hasOwnProperty(shift)) {
+                    counts[shift]++;
+                }
+            }
+            
+            return counts;
+        }
+
+
+    </script>
+</body>
+</html>
