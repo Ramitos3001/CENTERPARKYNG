@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnos - Parqueaderos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Turnos - Parqueaderos</h1>
+        <p>Gestión inteligente de horarios para personal de parqueaderos</p>
+    </header>
+
+    <main>
+        <section class="controls">
+            <div>
+                <label for="month">Mes:</label>
+                <select id="month">
+                    <option>Enero</option>
+                    <option>Febrero</option>
+                    <option>Marzo</option>
+                    <option>Abril</option>
+                    <option>Mayo</option>
+                    <option>Junio</option>
+                    <option>Julio</option>
+                    <option>Agosto</option>
+                    <option>Septiembre</option>
+                    <option>Octubre</option>
+                    <option>Noviembre</option>
+                    <option>Diciembre</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="year">Año:</label>
+                <select id="year">
+                    <option>2024</option>
+                    <option>2025</option>
+                </select>
+            </div>
+
+            <div>
+                <button>Generar Horario</button>
+                <button>Asignar Automático</button>
+            </div>
+        </section>
+
+        <section class="employee-management">
+            <h2>👥 Gestión de Empleados</h2>
+            <div>
+                <button>Agregar Empleado</button>
+            </div>
+        </section>
+
+        <section class="shift-info">
+            <div>
+                <h3>Turno Mañana (M)</h3>
+                <p>L-S: 6:00 AM - 1:00 PM (7h)</p>
+                <p>Dom: 8:00 AM - 2:00 PM (6h)</p>
+            </div>
+
+            <div>
+                <h3>Turno Tarde (T)</h3>
+                <p>L-S: 1:00 PM - 8:00 PM (7h)</p>
+                <p>Dom: 2:00 PM - 9:00 PM (7h)</p>
+            </div>
+
+            <div>
+                <h3>Turno Noche (N)</h3>
+                <p>L-Mi: 5:00 PM - 11:00 PM (6h)</p>
+                <p>J-S: 8:00 PM - 2:00 AM (6h)</p>
+                <p>Domingo: Sin turno noche</p>
+            </div>
+
+            <div>
+                <h3>Descanso (D)</h3>
+                <p>Día libre</p>
+            </div>
+        </section>
+
+        <section class="rules">
+            <h2>Reglas del Sistema (7 Operarios - 44h Semanales)</h2>
+            <p>• 2 operarios por turno (M/T/N) • 1 operario descansa cada día • 44 horas semanales exactas por trabajador</p>
+        </section>
+
+        <section class="schedule">
+            <h2>Seleccione un mes para generar el horario</h2>
+        </section>
+
+        <section class="summary">
+            <h2>📊 Resumen Mensual</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Turno Mañana</th>
+                        <th>Turno Tarde</th>
+                        <th>Turno Noche</th>
+                        <th>Días Descanso</th>
+                        <th>Total Horas</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
